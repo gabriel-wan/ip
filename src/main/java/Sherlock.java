@@ -5,7 +5,7 @@ import java.util.Scanner;
  */
 public class Sherlock {
     /**
-     * Starts Sherlock, echoes commands, and exits when the user enters {@code bye}.
+     * Starts Sherlock, stores entered tasks, lists them on request, and exits on {@code bye}.
      *
      * @param args command-line arguments, which are not used at this level
      */
@@ -20,14 +20,23 @@ public class Sherlock {
         System.out.println("Hello! I'm Sherlock, your detective assistant.");
         System.out.println("What can I do for you?");
 
+        String[] tasks = new String[100];
+        int numberOfTasks = 0;
         try (Scanner scanner = new Scanner(System.in)) {
             while (true) {
                 String command = scanner.nextLine();
                 if (command.equals("bye")) {
                     System.out.println("Bye. Hope to see you again soon!");
                     break;
+                } else if (command.equals("list")) {
+                    for (int i = 0; i < numberOfTasks; i++) {
+                        System.out.println((i + 1) + ". " + tasks[i]);
+                    }
+                } else {
+                    tasks[numberOfTasks] = command;
+                    numberOfTasks++;
+                    System.out.println("added: " + command);
                 }
-                System.out.println(command);
             }
         }
     }
