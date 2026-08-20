@@ -139,9 +139,9 @@ class TaskList {
     private final ArrayList<Task> tasks;
 
     /**
-     * Creates an empty task list with a fixed maximum capacity.
+     * Creates an empty task list with an initial capacity.
      *
-     * @param capacity maximum number of tasks the list can hold
+     * @param capacity initial number of tasks the list can hold without resizing
      */
     TaskList(int capacity) {
         tasks = new ArrayList<>(capacity);
