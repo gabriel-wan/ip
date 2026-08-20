@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Scanner;
 
 /**
@@ -135,8 +136,7 @@ class SherlockException extends Exception {
  * Stores Sherlock's tasks and provides indexed access to them.
  */
 class TaskList {
-    private final Task[] tasks;
-    private int size;
+    private final ArrayList<Task> tasks;
 
     /**
      * Creates an empty task list with a fixed maximum capacity.
@@ -144,22 +144,16 @@ class TaskList {
      * @param capacity maximum number of tasks the list can hold
      */
     TaskList(int capacity) {
-        tasks = new Task[capacity];
-        size = 0;
+        tasks = new ArrayList<>(capacity);
     }
 
     /**
      * Adds a task to the end of this list.
      *
      * @param task task to add
-     * @throws SherlockException if the list has reached its capacity
      */
-    void add(Task task) throws SherlockException {
-        if (size == tasks.length) {
-            throw new SherlockException("The task list is full.");
-        }
-        tasks[size] = task;
-        size++;
+    void add(Task task) {
+        tasks.add(task);
     }
 
     /**
@@ -169,7 +163,7 @@ class TaskList {
      * @return the task at the given index
      */
     Task get(int index) {
-        return tasks[index];
+        return tasks.get(index);
     }
 
     /**
@@ -179,13 +173,7 @@ class TaskList {
      * @return the removed task
      */
     Task delete(int index) {
-        Task deletedTask = tasks[index];
-        for (int i = index; i < size - 1; i++) {
-            tasks[i] = tasks[i + 1];
-        }
-        tasks[size - 1] = null;
-        size--;
-        return deletedTask;
+        return tasks.remove(index);
     }
 
     /**
@@ -194,7 +182,7 @@ class TaskList {
      * @return current task count
      */
     int size() {
-        return size;
+        return tasks.size();
     }
 }
 
