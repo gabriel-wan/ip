@@ -191,7 +191,7 @@ class TaskList {
  */
 abstract class Task {
     private final String description;
-    private boolean isDone;
+    private TaskStatus status;
 
     /**
      * Creates an incomplete task with the given description.
@@ -200,21 +200,21 @@ abstract class Task {
      */
     Task(String description) {
         this.description = description;
-        this.isDone = false;
+        this.status = TaskStatus.NOT_DONE;
     }
 
     /**
      * Marks this task as completed.
      */
     void markAsDone() {
-        isDone = true;
+        status = TaskStatus.DONE;
     }
 
     /**
      * Marks this task as incomplete.
      */
     void markAsNotDone() {
-        isDone = false;
+        status = TaskStatus.NOT_DONE;
     }
 
     /**
@@ -231,9 +231,17 @@ abstract class Task {
      */
     @Override
     public String toString() {
-        String statusIcon = isDone ? "X" : " ";
+        String statusIcon = status == TaskStatus.DONE ? "X" : " ";
         return "[" + getTypeIcon() + "][" + statusIcon + "] " + description;
     }
+}
+
+/**
+ * Represents the only valid completion states of a task.
+ */
+enum TaskStatus {
+    NOT_DONE,
+    DONE
 }
 
 /**
