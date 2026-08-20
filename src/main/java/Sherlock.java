@@ -45,8 +45,18 @@ public class Sherlock {
                     incompleteTask.markAsNotDone();
                     System.out.println("OK, I've marked this task as not done yet:");
                     System.out.println("  " + incompleteTask);
-                } else {
-                    tasks[numberOfTasks] = new Task(command);
+                } else if (command.startsWith("todo ")) {
+                    tasks[numberOfTasks] = new Todo(command.substring(5));
+                    numberOfTasks++;
+                    System.out.println("added: " + tasks[numberOfTasks - 1]);
+                } else if (command.startsWith("deadline ")) {
+                    String[] details = command.substring(9).split(" /by ", 2);
+                    tasks[numberOfTasks] = new Deadline(details[0], details[1]);
+                    numberOfTasks++;
+                    System.out.println("added: " + tasks[numberOfTasks - 1]);
+                } else if (command.startsWith("event ")) {
+                    String[] details = command.substring(6).split(" /from | /to ", 3);
+                    tasks[numberOfTasks] = new Event(details[0], details[1], details[2]);
                     numberOfTasks++;
                     System.out.println("added: " + tasks[numberOfTasks - 1]);
                 }
@@ -58,7 +68,7 @@ public class Sherlock {
 /**
  * Represents one task and whether it has been completed.
  */
-class Task {
+abstract class Task {
     private final String description;
     private boolean isDone;
 
@@ -87,13 +97,80 @@ class Task {
     }
 
     /**
-     * Returns the task in the text UI's list format.
+     * Returns the letter that identifies this task type in the text UI.
      *
-     * @return the completion status followed by the task description
+     * @return the task type icon
+     */
+    abstract String getTypeIcon();
+
+    /**
+     * Returns the common task details in the text UI's list format.
+     *
+     * @return the type and completion status followed by the task description
      */
     @Override
     public String toString() {
         String statusIcon = isDone ? "X" : " ";
-        return "[" + statusIcon + "] " + description;
+        return "[" + getTypeIcon() + "][" + statusIcon + "] " + description;
+    }
+}
+
+/**
+ * Represents a task without a date or time.
+ */
+class Todo extends Task {
+    Todo(String description) {
+        super(description);
+    }
+
+    @Override
+    String getTypeIcon() {
+        return "T";
+    }
+}
+
+/**
+ * Represents a task that must be completed by a specified time.
+ */
+class Deadline extends Task {
+    private final String by;
+
+    Deadline(String description, String by) {
+        super(description);
+        this.by = by;
+    }
+
+    @Override
+    String getTypeIcon() {
+        return "D";
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + " (by: " + by + ")";
+    }
+}
+
+/**
+ * Represents an event that occurs during a specified time period.
+ */
+class Event extends Task {
+    private final String from;
+    private final String to;
+
+    Event(String description, String from, String to) {
+        super(description);
+        this.from = from;
+        this.to = to;
+    }
+
+    @Override
+    String getTypeIcon() {
+        return "E";
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + " (from: " + from + " to: " + to + ")";
     }
 }
