@@ -20,8 +20,7 @@ public class Sherlock {
         System.out.println("Hello! I'm Sherlock, your detective assistant.");
         System.out.println("What can I do for you?");
 
-        Task[] tasks = new Task[100];
-        int numberOfTasks = 0;
+        TaskList tasks = new TaskList(100);
         try (Scanner scanner = new Scanner(System.in)) {
             while (true) {
                 String command = scanner.nextLine();
@@ -31,27 +30,25 @@ public class Sherlock {
                         break;
                     } else if (command.equals("list")) {
                         System.out.println("Here are the tasks in your list:");
-                        for (int i = 0; i < numberOfTasks; i++) {
-                            System.out.println((i + 1) + ". " + tasks[i]);
+                        for (int i = 0; i < tasks.size(); i++) {
+                            System.out.println((i + 1) + ". " + tasks.get(i));
                         }
                     } else if (command.equals("mark") || command.startsWith("mark ")) {
-                        int taskNumber = parseTaskNumber(command.substring(4), numberOfTasks);
-                        Task completedTask = tasks[taskNumber - 1];
+                        int taskNumber = parseTaskNumber(command.substring(4), tasks.size());
+                        Task completedTask = tasks.get(taskNumber - 1);
                         completedTask.markAsDone();
                         System.out.println("Nice! I've marked this task as done:");
                         System.out.println("  " + completedTask);
                     } else if (command.equals("unmark") || command.startsWith("unmark ")) {
-                        int taskNumber = parseTaskNumber(command.substring(6), numberOfTasks);
-                        Task incompleteTask = tasks[taskNumber - 1];
+                        int taskNumber = parseTaskNumber(command.substring(6), tasks.size());
+                        Task incompleteTask = tasks.get(taskNumber - 1);
                         incompleteTask.markAsNotDone();
                         System.out.println("OK, I've marked this task as not done yet:");
                         System.out.println("  " + incompleteTask);
                     } else if (command.equals("todo") || command.startsWith("todo ")) {
                         String description = requireText(command.substring(4), "I need a case description before I can add it.");
-                        ensureSpaceForTask(numberOfTasks, tasks.length);
-                        tasks[numberOfTasks] = new Todo(description);
-                        numberOfTasks++;
-                        System.out.println("added: " + tasks[numberOfTasks - 1]);
+                        tasks.add(new Todo(description));
+                        System.out.println("added: " + tasks.get(tasks.size() - 1));
                     } else if (command.equals("deadline") || command.startsWith("deadline ")) {
                         String[] details = command.substring(8).trim().split(" /by ", 2);
                         if (details.length != 2) {
@@ -59,10 +56,8 @@ public class Sherlock {
                         }
                         String description = requireText(details[0], "The description of a deadline cannot be empty.");
                         String by = requireText(details[1], "The time of a deadline cannot be empty.");
-                        ensureSpaceForTask(numberOfTasks, tasks.length);
-                        tasks[numberOfTasks] = new Deadline(description, by);
-                        numberOfTasks++;
-                        System.out.println("added: " + tasks[numberOfTasks - 1]);
+                        tasks.add(new Deadline(description, by));
+                        System.out.println("added: " + tasks.get(tasks.size() - 1));
                     } else if (command.equals("event") || command.startsWith("event ")) {
                         String[] details = command.substring(5).trim().split(" /from | /to ", 3);
                         if (details.length != 3) {
@@ -71,10 +66,8 @@ public class Sherlock {
                         String description = requireText(details[0], "The description of an event cannot be empty.");
                         String from = requireText(details[1], "The start time of an event cannot be empty.");
                         String to = requireText(details[2], "The end time of an event cannot be empty.");
-                        ensureSpaceForTask(numberOfTasks, tasks.length);
-                        tasks[numberOfTasks] = new Event(description, from, to);
-                        numberOfTasks++;
-                        System.out.println("added: " + tasks[numberOfTasks - 1]);
+                        tasks.add(new Event(description, from, to));
+                        System.out.println("added: " + tasks.get(tasks.size() - 1));
                     } else {
                         throw new SherlockException("That command is not in my casebook. Try another clue.");
                     }
@@ -121,18 +114,6 @@ public class Sherlock {
         return trimmedText;
     }
 
-    /**
-     * Checks that the fixed-size task array can accept another task.
-     *
-     * @param taskCount number of tasks currently stored
-     * @param capacity maximum number of tasks the array can hold
-     * @throws SherlockException if the task list is full
-     */
-    private static void ensureSpaceForTask(int taskCount, int capacity) throws SherlockException {
-        if (taskCount == capacity) {
-            throw new SherlockException("The task list is full.");
-        }
-    }
 }
 
 /**
@@ -141,6 +122,57 @@ public class Sherlock {
 class SherlockException extends Exception {
     SherlockException(String message) {
         super(message);
+    }
+}
+
+/**
+ * Stores Sherlock's tasks and provides indexed access to them.
+ */
+class TaskList {
+    private final Task[] tasks;
+    private int size;
+
+    /**
+     * Creates an empty task list with a fixed maximum capacity.
+     *
+     * @param capacity maximum number of tasks the list can hold
+     */
+    TaskList(int capacity) {
+        tasks = new Task[capacity];
+        size = 0;
+    }
+
+    /**
+     * Adds a task to the end of this list.
+     *
+     * @param task task to add
+     * @throws SherlockException if the list has reached its capacity
+     */
+    void add(Task task) throws SherlockException {
+        if (size == tasks.length) {
+            throw new SherlockException("The task list is full.");
+        }
+        tasks[size] = task;
+        size++;
+    }
+
+    /**
+     * Returns the task at a zero-based index.
+     *
+     * @param index zero-based task index
+     * @return the task at the given index
+     */
+    Task get(int index) {
+        return tasks[index];
+    }
+
+    /**
+     * Returns the number of tasks currently in this list.
+     *
+     * @return current task count
+     */
+    int size() {
+        return size;
     }
 }
 
