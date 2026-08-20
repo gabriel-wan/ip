@@ -45,6 +45,12 @@ public class Sherlock {
                         incompleteTask.markAsNotDone();
                         System.out.println("OK, I've marked this task as not done yet:");
                         System.out.println("  " + incompleteTask);
+                    } else if (command.equals("delete") || command.startsWith("delete ")) {
+                        int taskNumber = parseTaskNumber(command.substring(6), tasks.size());
+                        Task deletedTask = tasks.delete(taskNumber - 1);
+                        System.out.println("Noted. I've removed this task:");
+                        System.out.println("  " + deletedTask);
+                        System.out.println("Now you have " + tasks.size() + " tasks in the list.");
                     } else if (command.equals("todo") || command.startsWith("todo ")) {
                         String description = requireText(command.substring(4), "I need a case description before I can add it.");
                         tasks.add(new Todo(description));
@@ -164,6 +170,22 @@ class TaskList {
      */
     Task get(int index) {
         return tasks[index];
+    }
+
+    /**
+     * Removes and returns the task at a zero-based index.
+     *
+     * @param index zero-based task index
+     * @return the removed task
+     */
+    Task delete(int index) {
+        Task deletedTask = tasks[index];
+        for (int i = index; i < size - 1; i++) {
+            tasks[i] = tasks[i + 1];
+        }
+        tasks[size - 1] = null;
+        size--;
+        return deletedTask;
     }
 
     /**
