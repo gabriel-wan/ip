@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -381,11 +382,11 @@ class Todo extends Task {
  * Represents a task that must be completed by a specified time.
  */
 class Deadline extends Task {
-    private final String by;
+    private final LocalDate by;
 
     Deadline(String description, String by) {
         super(description);
-        this.by = by;
+        this.by = LocalDate.parse(by);
     }
 
     @Override
