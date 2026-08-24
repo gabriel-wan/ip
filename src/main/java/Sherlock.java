@@ -2,6 +2,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -382,6 +383,7 @@ class Todo extends Task {
  * Represents a task that must be completed by a specified time.
  */
 class Deadline extends Task {
+    private static final DateTimeFormatter DISPLAY_DATE_FORMAT = DateTimeFormatter.ofPattern("MMM d yyyy");
     private final LocalDate by;
 
     Deadline(String description, String by) {
@@ -396,7 +398,7 @@ class Deadline extends Task {
 
     @Override
     public String toString() {
-        return super.toString() + " (by: " + by + ")";
+        return super.toString() + " (by: " + by.format(DISPLAY_DATE_FORMAT) + ")";
     }
 
     @Override
