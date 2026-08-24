@@ -1,6 +1,9 @@
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -91,6 +94,8 @@ public class Sherlock {
                     } else {
                         throw new SherlockException("That command is not in my casebook. Try another clue.");
                     }
+                } catch (DateTimeParseException exception) {
+                    System.out.println("☹ OOPS!!! Enter deadline dates in yyyy-MM-dd format, for example 2019-10-15.");
                 } catch (SherlockException | IOException exception) {
                     System.out.println("☹ OOPS!!! " + exception.getMessage());
                 }
@@ -235,7 +240,7 @@ class Storage {
                     tasks.add(parseTask(line));
                 }
             }
-        } catch (IOException | SherlockException exception) {
+        } catch (IOException | SherlockException | DateTimeParseException exception) {
             System.out.println("☹ OOPS!!! I could not load saved tasks: " + exception.getMessage());
         }
         return tasks;
@@ -381,11 +386,12 @@ class Todo extends Task {
  * Represents a task that must be completed by a specified time.
  */
 class Deadline extends Task {
-    private final String by;
+    private static final DateTimeFormatter DISPLAY_DATE_FORMAT = DateTimeFormatter.ofPattern("MMM d yyyy");
+    private final LocalDate by;
 
     Deadline(String description, String by) {
         super(description);
-        this.by = by;
+        this.by = LocalDate.parse(by);
     }
 
     @Override
@@ -395,7 +401,7 @@ class Deadline extends Task {
 
     @Override
     public String toString() {
-        return super.toString() + " (by: " + by + ")";
+        return super.toString() + " (by: " + by.format(DISPLAY_DATE_FORMAT) + ")";
     }
 
     @Override
