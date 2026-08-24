@@ -3,6 +3,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -93,6 +94,8 @@ public class Sherlock {
                     } else {
                         throw new SherlockException("That command is not in my casebook. Try another clue.");
                     }
+                } catch (DateTimeParseException exception) {
+                    System.out.println("☹ OOPS!!! Enter deadline dates in yyyy-MM-dd format, for example 2019-10-15.");
                 } catch (SherlockException | IOException exception) {
                     System.out.println("☹ OOPS!!! " + exception.getMessage());
                 }
@@ -237,7 +240,7 @@ class Storage {
                     tasks.add(parseTask(line));
                 }
             }
-        } catch (IOException | SherlockException exception) {
+        } catch (IOException | SherlockException | DateTimeParseException exception) {
             System.out.println("☹ OOPS!!! I could not load saved tasks: " + exception.getMessage());
         }
         return tasks;
