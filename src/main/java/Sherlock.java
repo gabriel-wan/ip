@@ -10,6 +10,20 @@ import java.util.Scanner;
  */
 public class Sherlock {
     private static final Path SAVE_FILE = Path.of("data", "sherlock.txt");
+    private final Storage storage;
+    private TaskList tasks;
+    private final Ui ui;
+
+    /**
+     * Creates the application and restores saved tasks where possible.
+     *
+     * @param filePath location of the task data file
+     * @param ui user interface used for all interaction
+     */
+    Sherlock(Path filePath, Ui ui) {
+        this.storage = new Storage(filePath);
+        this.ui = ui;
+    }
 
     /**
      * Starts Sherlock, stores entered tasks, lists them on request, and exits on {@code bye}.
@@ -17,86 +31,90 @@ public class Sherlock {
      * @param args command-line arguments, which are not used at this level
      */
     public static void main(String[] args) {
-        String banner = "  ____  _               _            _    \n"
-                + " / ___|| |__   ___ _ __| | ___   ___| | __\n"
-                + " \\___ \\| '_ \\ / _ \\ '__| |/ _ \\ / __| |/ /\n"
-                + "  ___) | | | |  __/ |  | | (_) | (__|   < \n"
-                + " |____/|_| |_|\\___|_|  |_|\\___/ \\___|_|\\_\\\n";
+        try (Ui ui = new Ui(new Scanner(System.in))) {
+            new Sherlock(SAVE_FILE, ui).run();
+        }
+    }
 
-        System.out.println(banner);
-        System.out.println("Hello! I'm Sherlock, your detective assistant.");
-        System.out.println("What can I do for you?");
-
-        Storage storage = new Storage(SAVE_FILE);
-        TaskList tasks = storage.load();
-        try (Scanner scanner = new Scanner(System.in)) {
-            while (true) {
-                String command = scanner.nextLine();
-                try {
-                    if (command.equals("bye")) {
-                        System.out.println("Bye. Hope to see you again soon!");
-                        break;
-                    } else if (command.equals("list")) {
-                        System.out.println("Here are the tasks in your list:");
-                        for (int i = 0; i < tasks.size(); i++) {
-                            System.out.println((i + 1) + ". " + tasks.get(i));
-                        }
-                    } else if (command.equals("mark") || command.startsWith("mark ")) {
-                        int taskNumber = parseTaskNumber(command.substring(4), tasks.size());
-                        Task completedTask = tasks.get(taskNumber - 1);
-                        completedTask.markAsDone();
-                        storage.save(tasks);
-                        System.out.println("Nice! I've marked this task as done:");
-                        System.out.println("  " + completedTask);
-                    } else if (command.equals("unmark") || command.startsWith("unmark ")) {
-                        int taskNumber = parseTaskNumber(command.substring(6), tasks.size());
-                        Task incompleteTask = tasks.get(taskNumber - 1);
-                        incompleteTask.markAsNotDone();
-                        storage.save(tasks);
-                        System.out.println("OK, I've marked this task as not done yet:");
-                        System.out.println("  " + incompleteTask);
-                    } else if (command.equals("delete") || command.startsWith("delete ")) {
-                        int taskNumber = parseTaskNumber(command.substring(6), tasks.size());
-                        Task deletedTask = tasks.delete(taskNumber - 1);
-                        storage.save(tasks);
-                        System.out.println("Noted. I've removed this task:");
-                        System.out.println("  " + deletedTask);
-                        System.out.println("Now you have " + tasks.size() + " tasks in the list.");
-                    } else if (command.equals("todo") || command.startsWith("todo ")) {
-                        String description = requireText(command.substring(4), "I need a case description before I can add it.");
-                        tasks.add(new Todo(description));
-                        storage.save(tasks);
-                        System.out.println("added: " + tasks.get(tasks.size() - 1));
-                    } else if (command.equals("deadline") || command.startsWith("deadline ")) {
-                        String[] details = command.substring(8).trim().split(" /by ", 2);
-                        if (details.length != 2) {
-                            throw new SherlockException("A deadline must include /by followed by a time.");
-                        }
-                        String description = requireText(details[0], "The description of a deadline cannot be empty.");
-                        String by = requireText(details[1], "The time of a deadline cannot be empty.");
-                        tasks.add(new Deadline(description, by));
-                        storage.save(tasks);
-                        System.out.println("added: " + tasks.get(tasks.size() - 1));
-                    } else if (command.equals("event") || command.startsWith("event ")) {
-                        String[] details = command.substring(5).trim().split(" /from | /to ", 3);
-                        if (details.length != 3) {
-                            throw new SherlockException("An event must include /from and /to times.");
-                        }
-                        String description = requireText(details[0], "The description of an event cannot be empty.");
-                        String from = requireText(details[1], "The start time of an event cannot be empty.");
-                        String to = requireText(details[2], "The end time of an event cannot be empty.");
-                        tasks.add(new Event(description, from, to));
-                        storage.save(tasks);
-                        System.out.println("added: " + tasks.get(tasks.size() - 1));
-                    } else {
-                        throw new SherlockException("That command is not in my casebook. Try another clue.");
+    /**
+     * Runs Sherlock's command loop until the user exits.
+     */
+    void run() {
+        ui.showWelcome();
+        tasks = loadTasks();
+        while (true) {
+            String command = ui.readCommand();
+            try {
+                if (command.equals("bye")) {
+                    ui.showGoodbye();
+                    return;
+                } else if (command.equals("list")) {
+                    ui.showTaskList(tasks);
+                } else if (command.equals("mark") || command.startsWith("mark ")) {
+                    int taskNumber = parseTaskNumber(command.substring(4), tasks.size());
+                    Task completedTask = tasks.get(taskNumber - 1);
+                    completedTask.markAsDone();
+                    storage.save(tasks);
+                    ui.showMarkedAsDone(completedTask);
+                } else if (command.equals("unmark") || command.startsWith("unmark ")) {
+                    int taskNumber = parseTaskNumber(command.substring(6), tasks.size());
+                    Task incompleteTask = tasks.get(taskNumber - 1);
+                    incompleteTask.markAsNotDone();
+                    storage.save(tasks);
+                    ui.showMarkedAsNotDone(incompleteTask);
+                } else if (command.equals("delete") || command.startsWith("delete ")) {
+                    int taskNumber = parseTaskNumber(command.substring(6), tasks.size());
+                    Task deletedTask = tasks.delete(taskNumber - 1);
+                    storage.save(tasks);
+                    ui.showDeletedTask(deletedTask, tasks.size());
+                } else if (command.equals("todo") || command.startsWith("todo ")) {
+                    String description = requireText(command.substring(4), "I need a case description before I can add it.");
+                    tasks.add(new Todo(description));
+                    storage.save(tasks);
+                    ui.showAddedTask(tasks.get(tasks.size() - 1));
+                } else if (command.equals("deadline") || command.startsWith("deadline ")) {
+                    String[] details = command.substring(8).trim().split(" /by ", 2);
+                    if (details.length != 2) {
+                        throw new SherlockException("A deadline must include /by followed by a time.");
                     }
-                } catch (DateTimeParseException exception) {
-                    System.out.println("☹ OOPS!!! Enter deadline dates in yyyy-MM-dd format, for example 2019-10-15.");
-                } catch (SherlockException | IOException exception) {
-                    System.out.println("☹ OOPS!!! " + exception.getMessage());
+                    String description = requireText(details[0], "The description of a deadline cannot be empty.");
+                    String by = requireText(details[1], "The time of a deadline cannot be empty.");
+                    tasks.add(new Deadline(description, by));
+                    storage.save(tasks);
+                    ui.showAddedTask(tasks.get(tasks.size() - 1));
+                } else if (command.equals("event") || command.startsWith("event ")) {
+                    String[] details = command.substring(5).trim().split(" /from | /to ", 3);
+                    if (details.length != 3) {
+                        throw new SherlockException("An event must include /from and /to times.");
+                    }
+                    String description = requireText(details[0], "The description of an event cannot be empty.");
+                    String from = requireText(details[1], "The start time of an event cannot be empty.");
+                    String to = requireText(details[2], "The end time of an event cannot be empty.");
+                    tasks.add(new Event(description, from, to));
+                    storage.save(tasks);
+                    ui.showAddedTask(tasks.get(tasks.size() - 1));
+                } else {
+                    throw new SherlockException("That command is not in my casebook. Try another clue.");
                 }
+            } catch (DateTimeParseException exception) {
+                ui.showError("Enter deadline dates in yyyy-MM-dd format, for example 2019-10-15.");
+            } catch (SherlockException | IOException exception) {
+                ui.showError(exception.getMessage());
             }
+        }
+    }
+
+    /**
+     * Loads tasks, showing an error and continuing with an empty list if storage cannot be read.
+     *
+     * @return saved tasks, or an empty list after a loading error
+     */
+    private TaskList loadTasks() {
+        try {
+            return storage.load();
+        } catch (IOException | SherlockException | DateTimeParseException exception) {
+            ui.showLoadingError(exception.getMessage());
+            return new TaskList(100);
         }
     }
 

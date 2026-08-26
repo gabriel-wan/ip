@@ -1,7 +1,6 @@
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,24 +24,20 @@ class Storage {
      *
      * @return the restored task list
      */
-    TaskList load() {
+    TaskList load() throws IOException, SherlockException {
         TaskList tasks = new TaskList(100);
-        try {
-            Path parent = filePath.getParent();
-            if (parent != null) {
-                Files.createDirectories(parent);
+        Path parent = filePath.getParent();
+        if (parent != null) {
+            Files.createDirectories(parent);
+        }
+        if (Files.notExists(filePath)) {
+            Files.createFile(filePath);
+            return tasks;
+        }
+        for (String line : Files.readAllLines(filePath)) {
+            if (!line.isBlank()) {
+                tasks.add(parseTask(line));
             }
-            if (Files.notExists(filePath)) {
-                Files.createFile(filePath);
-                return tasks;
-            }
-            for (String line : Files.readAllLines(filePath)) {
-                if (!line.isBlank()) {
-                    tasks.add(parseTask(line));
-                }
-            }
-        } catch (IOException | SherlockException | DateTimeParseException exception) {
-            System.out.println("☹ OOPS!!! I could not load saved tasks: " + exception.getMessage());
         }
         return tasks;
     }
