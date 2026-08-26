@@ -10,6 +10,12 @@ public class Deadline extends Task {
     private static final DateTimeFormatter DISPLAY_DATE_FORMAT = DateTimeFormatter.ofPattern("MMM d yyyy");
     private final LocalDate by;
 
+    /**
+     * Creates an incomplete task with a deadline date in ISO-8601 format.
+     *
+     * @param description text describing the task
+     * @param by deadline date in {@code yyyy-MM-dd} format
+     */
     public Deadline(String description, String by) {
         super(description);
         this.by = LocalDate.parse(by);
@@ -20,11 +26,13 @@ public class Deadline extends Task {
         return "D";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String toString() {
         return super.toString() + " (by: " + by.format(DISPLAY_DATE_FORMAT) + ")";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String toFileString() {
         return super.toFileString() + " | " + by;
