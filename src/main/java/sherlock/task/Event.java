@@ -1,3 +1,5 @@
+package sherlock.task;
+
 /**
  * Represents a task that occurs during a specified time period.
  */

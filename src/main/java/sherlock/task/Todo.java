@@ -1,3 +1,5 @@
+package sherlock.task;
+
 /**
  * Represents a task without a date or time.
  */

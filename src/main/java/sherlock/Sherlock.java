@@ -1,7 +1,17 @@
+package sherlock;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.format.DateTimeParseException;
 import java.util.Scanner;
+
+import sherlock.command.Command;
+import sherlock.exception.SherlockException;
+import sherlock.parser.Parser;
+import sherlock.storage.Storage;
+import sherlock.task.Task;
+import sherlock.task.TaskList;
+import sherlock.ui.Ui;
 
 /**
  * The entry point for Sherlock, a detective-themed personal assistant chatbot.

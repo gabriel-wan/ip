@@ -1,9 +1,11 @@
+package sherlock.task;
+
 import java.util.ArrayList;
 
 /**
  * Stores Sherlock's tasks and provides indexed access to them.
  */
-class TaskList {
+public class TaskList {
     private final ArrayList<Task> tasks;
 
     /**
@@ -11,7 +13,7 @@ class TaskList {
      *
      * @param capacity initial number of tasks the list can hold without resizing
      */
-    TaskList(int capacity) {
+    public TaskList(int capacity) {
         tasks = new ArrayList<>(capacity);
     }
 
@@ -20,7 +22,7 @@ class TaskList {
      *
      * @param task task to add
      */
-    void add(Task task) {
+    public void add(Task task) {
         tasks.add(task);
     }
 
@@ -30,7 +32,7 @@ class TaskList {
      * @param index zero-based task index
      * @return the task at the given index
      */
-    Task get(int index) {
+    public Task get(int index) {
         return tasks.get(index);
     }
 
@@ -40,7 +42,7 @@ class TaskList {
      * @param index zero-based task index
      * @return the removed task
      */
-    Task delete(int index) {
+    public Task delete(int index) {
         return tasks.remove(index);
     }
 
@@ -49,7 +51,7 @@ class TaskList {
      *
      * @return current task count
      */
-    int size() {
+    public int size() {
         return tasks.size();
     }
 }
