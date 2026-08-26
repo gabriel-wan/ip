@@ -16,6 +16,11 @@ public class Ui implements AutoCloseable {
             + " |____/|_| |_|\\___|_|  |_|\\___/ \\___|_|\\_\\\n";
     private final Scanner scanner;
 
+    /**
+     * Creates a text user interface that reads commands from the given scanner.
+     *
+     * @param scanner command input source
+     */
     public Ui(Scanner scanner) {
         this.scanner = scanner;
     }
@@ -83,6 +88,7 @@ public class Ui implements AutoCloseable {
         System.out.println("☹ OOPS!!! I could not load saved tasks: " + message);
     }
 
+    /** Closes the scanner used by this user interface. */
     @Override
     public void close() {
         scanner.close();
