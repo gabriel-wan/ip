@@ -1,7 +1,15 @@
+package sherlock.parser;
+
+import sherlock.command.Command;
+import sherlock.exception.SherlockException;
+import sherlock.task.Deadline;
+import sherlock.task.Event;
+import sherlock.task.Todo;
+
 /**
  * Converts user-entered text into validated Sherlock commands.
  */
-class Parser {
+public class Parser {
     /**
      * Parses one command using the current task count to validate task references.
      *
@@ -10,7 +18,7 @@ class Parser {
      * @return the corresponding command
      * @throws SherlockException if the command is incomplete or invalid
      */
-    Command parse(String input, int taskCount) throws SherlockException {
+    public Command parse(String input, int taskCount) throws SherlockException {
         if (input.equals("bye")) {
             return Command.of(Command.Type.BYE);
         } else if (input.equals("list")) {

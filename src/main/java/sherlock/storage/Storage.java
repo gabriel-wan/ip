@@ -1,13 +1,22 @@
+package sherlock.storage;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import sherlock.exception.SherlockException;
+import sherlock.task.Deadline;
+import sherlock.task.Event;
+import sherlock.task.Task;
+import sherlock.task.TaskList;
+import sherlock.task.Todo;
+
 /**
  * Saves tasks to, and restores tasks from, Sherlock's local data file.
  */
-class Storage {
+public class Storage {
     private final Path filePath;
 
     /**
@@ -15,7 +24,7 @@ class Storage {
      *
      * @param filePath location of Sherlock's saved tasks
      */
-    Storage(Path filePath) {
+    public Storage(Path filePath) {
         this.filePath = filePath;
     }
 
@@ -24,7 +33,7 @@ class Storage {
      *
      * @return the restored task list
      */
-    TaskList load() throws IOException, SherlockException {
+    public TaskList load() throws IOException, SherlockException {
         TaskList tasks = new TaskList(100);
         Path parent = filePath.getParent();
         if (parent != null) {
@@ -48,7 +57,7 @@ class Storage {
      * @param tasks task list to persist
      * @throws IOException if the file cannot be written
      */
-    void save(TaskList tasks) throws IOException {
+    public void save(TaskList tasks) throws IOException {
         List<String> lines = new ArrayList<>();
         for (int index = 0; index < tasks.size(); index++) {
             lines.add(tasks.get(index).toFileString());

@@ -1,9 +1,17 @@
+package sherlock;
+
 import java.io.IOException;
 import java.nio.file.Path;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Scanner;
+
+import sherlock.command.Command;
+import sherlock.exception.SherlockException;
+import sherlock.parser.Parser;
+import sherlock.storage.Storage;
+import sherlock.task.Task;
+import sherlock.task.TaskList;
+import sherlock.ui.Ui;
 
 /**
  * The entry point for Sherlock, a detective-themed personal assistant chatbot.
@@ -114,142 +122,4 @@ public class Sherlock {
         }
     }
 
-}
-
-/**
- * Represents one task and whether it has been completed.
- */
-abstract class Task {
-    private final String description;
-    private TaskStatus status;
-
-    /**
-     * Creates an incomplete task with the given description.
-     *
-     * @param description text describing the task
-     */
-    Task(String description) {
-        this.description = description;
-        this.status = TaskStatus.NOT_DONE;
-    }
-
-    /**
-     * Marks this task as completed.
-     */
-    void markAsDone() {
-        status = TaskStatus.DONE;
-    }
-
-    /**
-     * Marks this task as incomplete.
-     */
-    void markAsNotDone() {
-        status = TaskStatus.NOT_DONE;
-    }
-
-    /**
-     * Returns the letter that identifies this task type in the text UI.
-     *
-     * @return the task type icon
-     */
-    abstract String getTypeIcon();
-
-    /**
-     * Returns this task in the compact format used in Sherlock's data file.
-     *
-     * @return persistent representation of this task
-     */
-    String toFileString() {
-        return getTypeIcon() + " | " + (status == TaskStatus.DONE ? "1" : "0") + " | " + description;
-    }
-
-    /**
-     * Returns the common task details in the text UI's list format.
-     *
-     * @return the type and completion status followed by the task description
-     */
-    @Override
-    public String toString() {
-        String statusIcon = status == TaskStatus.DONE ? "X" : " ";
-        return "[" + getTypeIcon() + "][" + statusIcon + "] " + description;
-    }
-}
-
-/**
- * Represents the only valid completion states of a task.
- */
-enum TaskStatus {
-    NOT_DONE,
-    DONE
-}
-
-/**
- * Represents a task without a date or time.
- */
-class Todo extends Task {
-    Todo(String description) {
-        super(description);
-    }
-
-    @Override
-    String getTypeIcon() {
-        return "T";
-    }
-}
-
-/**
- * Represents a task that must be completed by a specified time.
- */
-class Deadline extends Task {
-    private static final DateTimeFormatter DISPLAY_DATE_FORMAT = DateTimeFormatter.ofPattern("MMM d yyyy");
-    private final LocalDate by;
-
-    Deadline(String description, String by) {
-        super(description);
-        this.by = LocalDate.parse(by);
-    }
-
-    @Override
-    String getTypeIcon() {
-        return "D";
-    }
-
-    @Override
-    public String toString() {
-        return super.toString() + " (by: " + by.format(DISPLAY_DATE_FORMAT) + ")";
-    }
-
-    @Override
-    String toFileString() {
-        return super.toFileString() + " | " + by;
-    }
-}
-
-/**
- * Represents an event that occurs during a specified time period.
- */
-class Event extends Task {
-    private final String from;
-    private final String to;
-
-    Event(String description, String from, String to) {
-        super(description);
-        this.from = from;
-        this.to = to;
-    }
-
-    @Override
-    String getTypeIcon() {
-        return "E";
-    }
-
-    @Override
-    public String toString() {
-        return super.toString() + " (from: " + from + " to: " + to + ")";
-    }
-
-    @Override
-    String toFileString() {
-        return super.toFileString() + " | " + from + " | " + to;
-    }
 }

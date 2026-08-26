@@ -1,9 +1,13 @@
+package sherlock.command;
+
+import sherlock.task.Task;
+
 /**
  * Represents a validated action that Sherlock can perform.
  */
-class Command {
+public class Command {
     /** Identifies the action represented by a command. */
-    enum Type {
+    public enum Type {
         BYE,
         LIST,
         MARK,
@@ -22,27 +26,27 @@ class Command {
         this.task = task;
     }
 
-    static Command of(Type type) {
+    public static Command of(Type type) {
         return new Command(type, 0, null);
     }
 
-    static Command withTaskNumber(Type type, int taskNumber) {
+    public static Command withTaskNumber(Type type, int taskNumber) {
         return new Command(type, taskNumber, null);
     }
 
-    static Command withTask(Task task) {
+    public static Command withTask(Task task) {
         return new Command(Type.ADD, 0, task);
     }
 
-    Type getType() {
+    public Type getType() {
         return type;
     }
 
-    int getTaskNumber() {
+    public int getTaskNumber() {
         return taskNumber;
     }
 
-    Task getTask() {
+    public Task getTask() {
         return task;
     }
 }
