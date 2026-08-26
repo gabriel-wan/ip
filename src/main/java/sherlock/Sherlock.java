@@ -81,6 +81,9 @@ public class Sherlock {
         case LIST:
             ui.showTaskList(tasks);
             return false;
+        case FIND:
+            ui.showMatchingTasks(tasks.find(command.getKeyword()));
+            return false;
         case MARK:
             Task completedTask = tasks.get(command.getTaskNumber() - 1);
             completedTask.markAsDone();

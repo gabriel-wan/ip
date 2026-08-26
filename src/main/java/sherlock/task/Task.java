@@ -1,5 +1,7 @@
 package sherlock.task;
 
+import java.util.Locale;
+
 /**
  * Represents one task and whether it has been completed.
  */
@@ -33,6 +35,16 @@ public abstract class Task {
      * @return the task type icon
      */
     protected abstract String getTypeIcon();
+
+    /**
+     * Returns whether this task's description contains the keyword, ignoring case.
+     *
+     * @param keyword text to search for
+     * @return whether the description contains the keyword
+     */
+    public boolean matches(String keyword) {
+        return description.toLowerCase(Locale.ROOT).contains(keyword.toLowerCase(Locale.ROOT));
+    }
 
     /**
      * Returns this task in the compact format used in Sherlock's data file.
