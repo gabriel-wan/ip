@@ -29,10 +29,26 @@ class ParserTest {
     }
 
     @Test
+    void parseFind_createsFindCommandWithKeyword() throws SherlockException {
+        Command command = parser.parse("find book", 0);
+
+        assertEquals(Command.Type.FIND, command.getType());
+        assertEquals("book", command.getKeyword());
+    }
+
+    @Test
     void parseTodoWithoutDescription_throwsHelpfulException() {
         SherlockException exception = assertThrows(SherlockException.class,
                 () -> parser.parse("todo", 0));
 
         assertEquals("I need a case description before I can add it.", exception.getMessage());
+    }
+
+    @Test
+    void parseFindWithoutKeyword_throwsHelpfulException() {
+        SherlockException exception = assertThrows(SherlockException.class,
+                () -> parser.parse("find", 0));
+
+        assertEquals("I need a keyword to search the casebook.", exception.getMessage());
     }
 }
