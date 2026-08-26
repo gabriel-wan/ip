@@ -13,6 +13,7 @@ public class Sherlock {
     private final Storage storage;
     private TaskList tasks;
     private final Ui ui;
+    private final Parser parser;
 
     /**
      * Creates the application and restores saved tasks where possible.
@@ -23,6 +24,7 @@ public class Sherlock {
     Sherlock(Path filePath, Ui ui) {
         this.storage = new Storage(filePath);
         this.ui = ui;
+        this.parser = new Parser();
     }
 
     /**
@@ -43,64 +45,58 @@ public class Sherlock {
         ui.showWelcome();
         tasks = loadTasks();
         while (true) {
-            String command = ui.readCommand();
             try {
-                if (command.equals("bye")) {
-                    ui.showGoodbye();
+                Command command = parser.parse(ui.readCommand(), tasks.size());
+                if (execute(command)) {
                     return;
-                } else if (command.equals("list")) {
-                    ui.showTaskList(tasks);
-                } else if (command.equals("mark") || command.startsWith("mark ")) {
-                    int taskNumber = parseTaskNumber(command.substring(4), tasks.size());
-                    Task completedTask = tasks.get(taskNumber - 1);
-                    completedTask.markAsDone();
-                    storage.save(tasks);
-                    ui.showMarkedAsDone(completedTask);
-                } else if (command.equals("unmark") || command.startsWith("unmark ")) {
-                    int taskNumber = parseTaskNumber(command.substring(6), tasks.size());
-                    Task incompleteTask = tasks.get(taskNumber - 1);
-                    incompleteTask.markAsNotDone();
-                    storage.save(tasks);
-                    ui.showMarkedAsNotDone(incompleteTask);
-                } else if (command.equals("delete") || command.startsWith("delete ")) {
-                    int taskNumber = parseTaskNumber(command.substring(6), tasks.size());
-                    Task deletedTask = tasks.delete(taskNumber - 1);
-                    storage.save(tasks);
-                    ui.showDeletedTask(deletedTask, tasks.size());
-                } else if (command.equals("todo") || command.startsWith("todo ")) {
-                    String description = requireText(command.substring(4), "I need a case description before I can add it.");
-                    tasks.add(new Todo(description));
-                    storage.save(tasks);
-                    ui.showAddedTask(tasks.get(tasks.size() - 1));
-                } else if (command.equals("deadline") || command.startsWith("deadline ")) {
-                    String[] details = command.substring(8).trim().split(" /by ", 2);
-                    if (details.length != 2) {
-                        throw new SherlockException("A deadline must include /by followed by a time.");
-                    }
-                    String description = requireText(details[0], "The description of a deadline cannot be empty.");
-                    String by = requireText(details[1], "The time of a deadline cannot be empty.");
-                    tasks.add(new Deadline(description, by));
-                    storage.save(tasks);
-                    ui.showAddedTask(tasks.get(tasks.size() - 1));
-                } else if (command.equals("event") || command.startsWith("event ")) {
-                    String[] details = command.substring(5).trim().split(" /from | /to ", 3);
-                    if (details.length != 3) {
-                        throw new SherlockException("An event must include /from and /to times.");
-                    }
-                    String description = requireText(details[0], "The description of an event cannot be empty.");
-                    String from = requireText(details[1], "The start time of an event cannot be empty.");
-                    String to = requireText(details[2], "The end time of an event cannot be empty.");
-                    tasks.add(new Event(description, from, to));
-                    storage.save(tasks);
-                    ui.showAddedTask(tasks.get(tasks.size() - 1));
-                } else {
-                    throw new SherlockException("That command is not in my casebook. Try another clue.");
                 }
             } catch (DateTimeParseException exception) {
                 ui.showError("Enter deadline dates in yyyy-MM-dd format, for example 2019-10-15.");
             } catch (SherlockException | IOException exception) {
                 ui.showError(exception.getMessage());
             }
+        }
+    }
+
+    /**
+     * Applies a parsed command to Sherlock's task list.
+     *
+     * @param command command to execute
+     * @return whether Sherlock should exit
+     * @throws IOException if an updated task list cannot be saved
+     */
+    private boolean execute(Command command) throws IOException {
+        switch (command.getType()) {
+        case BYE:
+            ui.showGoodbye();
+            return true;
+        case LIST:
+            ui.showTaskList(tasks);
+            return false;
+        case MARK:
+            Task completedTask = tasks.get(command.getTaskNumber() - 1);
+            completedTask.markAsDone();
+            storage.save(tasks);
+            ui.showMarkedAsDone(completedTask);
+            return false;
+        case UNMARK:
+            Task incompleteTask = tasks.get(command.getTaskNumber() - 1);
+            incompleteTask.markAsNotDone();
+            storage.save(tasks);
+            ui.showMarkedAsNotDone(incompleteTask);
+            return false;
+        case DELETE:
+            Task deletedTask = tasks.delete(command.getTaskNumber() - 1);
+            storage.save(tasks);
+            ui.showDeletedTask(deletedTask, tasks.size());
+            return false;
+        case ADD:
+            tasks.add(command.getTask());
+            storage.save(tasks);
+            ui.showAddedTask(command.getTask());
+            return false;
+        default:
+            throw new AssertionError("Unhandled command type: " + command.getType());
         }
     }
 
@@ -116,42 +112,6 @@ public class Sherlock {
             ui.showLoadingError(exception.getMessage());
             return new TaskList(100);
         }
-    }
-
-    /**
-     * Validates and converts a one-based task number supplied in a command.
-     *
-     * @param input task number text
-     * @param taskCount number of tasks currently stored
-     * @return the validated task number
-     * @throws SherlockException if the input is not a valid task number
-     */
-    private static int parseTaskNumber(String input, int taskCount) throws SherlockException {
-        try {
-            int taskNumber = Integer.parseInt(input.trim());
-            if (taskNumber < 1 || taskNumber > taskCount) {
-                throw new SherlockException("The task number must refer to a task in the list.");
-            }
-            return taskNumber;
-        } catch (NumberFormatException exception) {
-            throw new SherlockException("The task number must be a whole number.");
-        }
-    }
-
-    /**
-     * Ensures that a required command component contains non-whitespace text.
-     *
-     * @param text command component to validate
-     * @param errorMessage message to show when the component is absent
-     * @return the trimmed component
-     * @throws SherlockException if the component is empty
-     */
-    private static String requireText(String text, String errorMessage) throws SherlockException {
-        String trimmedText = text.trim();
-        if (trimmedText.isEmpty()) {
-            throw new SherlockException(errorMessage);
-        }
-        return trimmedText;
     }
 
 }
