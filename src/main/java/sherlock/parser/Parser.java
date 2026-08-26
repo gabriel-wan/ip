@@ -23,6 +23,9 @@ public class Parser {
             return Command.of(Command.Type.BYE);
         } else if (input.equals("list")) {
             return Command.of(Command.Type.LIST);
+        } else if (input.equals("find") || input.startsWith("find ")) {
+            String keyword = requireText(input.substring(4), "I need a keyword to search the casebook.");
+            return Command.withKeyword(keyword);
         } else if (input.equals("mark") || input.startsWith("mark ")) {
             return Command.withTaskNumber(Command.Type.MARK, parseTaskNumber(input.substring(4), taskCount));
         } else if (input.equals("unmark") || input.startsWith("unmark ")) {

@@ -1,6 +1,7 @@
 package sherlock.task;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Stores Sherlock's tasks and provides indexed access to them.
@@ -44,6 +45,22 @@ public class TaskList {
      */
     public Task delete(int index) {
         return tasks.remove(index);
+    }
+
+    /**
+     * Returns the tasks whose descriptions contain the keyword, ignoring case.
+     *
+     * @param keyword text to search for
+     * @return tasks matching the keyword in their list order
+     */
+    public List<Task> find(String keyword) {
+        List<Task> matchingTasks = new ArrayList<>();
+        for (Task task : tasks) {
+            if (task.matches(keyword)) {
+                matchingTasks.add(task);
+            }
+        }
+        return matchingTasks;
     }
 
     /**

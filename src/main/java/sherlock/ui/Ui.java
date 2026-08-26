@@ -1,5 +1,6 @@
 package sherlock.ui;
 
+import java.util.List;
 import java.util.Scanner;
 
 import sherlock.task.Task;
@@ -51,6 +52,22 @@ public class Ui implements AutoCloseable {
         System.out.println("Here are the tasks in your list:");
         for (int index = 0; index < tasks.size(); index++) {
             System.out.println((index + 1) + ". " + tasks.get(index));
+        }
+    }
+
+    /**
+     * Displays tasks whose descriptions match a user's search keyword.
+     *
+     * @param matchingTasks tasks that contain the keyword
+     */
+    public void showMatchingTasks(List<Task> matchingTasks) {
+        if (matchingTasks.isEmpty()) {
+            System.out.println("I could not find any matching tasks.");
+            return;
+        }
+        System.out.println("Here are the matching tasks in your list:");
+        for (int index = 0; index < matchingTasks.size(); index++) {
+            System.out.println((index + 1) + ". " + matchingTasks.get(index));
         }
     }
 
