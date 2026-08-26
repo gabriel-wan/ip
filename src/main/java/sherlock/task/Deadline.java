@@ -8,11 +8,11 @@ import java.time.format.DateTimeFormatter;
  */
 public class Deadline extends Task {
     private static final DateTimeFormatter DISPLAY_DATE_FORMAT = DateTimeFormatter.ofPattern("MMM d yyyy");
-    private final LocalDate by;
+    private final LocalDate deadlineDate;
 
-    public Deadline(String description, String by) {
+    public Deadline(String description, String deadlineDate) {
         super(description);
-        this.by = LocalDate.parse(by);
+        this.deadlineDate = LocalDate.parse(deadlineDate);
     }
 
     @Override
@@ -22,11 +22,11 @@ public class Deadline extends Task {
 
     @Override
     public String toString() {
-        return super.toString() + " (by: " + by.format(DISPLAY_DATE_FORMAT) + ")";
+        return super.toString() + " (by: " + deadlineDate.format(DISPLAY_DATE_FORMAT) + ")";
     }
 
     @Override
     public String toFileString() {
-        return super.toFileString() + " | " + by;
+        return super.toFileString() + " | " + deadlineDate;
     }
 }

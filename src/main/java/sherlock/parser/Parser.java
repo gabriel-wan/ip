@@ -38,17 +38,17 @@ public class Parser {
                 throw new SherlockException("A deadline must include /by followed by a time.");
             }
             String description = requireText(details[0], "The description of a deadline cannot be empty.");
-            String by = requireText(details[1], "The time of a deadline cannot be empty.");
-            return Command.withTask(new Deadline(description, by));
+            String deadlineDate = requireText(details[1], "The time of a deadline cannot be empty.");
+            return Command.withTask(new Deadline(description, deadlineDate));
         } else if (input.equals("event") || input.startsWith("event ")) {
             String[] details = input.substring(5).trim().split(" /from | /to ", 3);
             if (details.length != 3) {
                 throw new SherlockException("An event must include /from and /to times.");
             }
             String description = requireText(details[0], "The description of an event cannot be empty.");
-            String from = requireText(details[1], "The start time of an event cannot be empty.");
-            String to = requireText(details[2], "The end time of an event cannot be empty.");
-            return Command.withTask(new Event(description, from, to));
+            String startTime = requireText(details[1], "The start time of an event cannot be empty.");
+            String endTime = requireText(details[2], "The end time of an event cannot be empty.");
+            return Command.withTask(new Event(description, startTime, endTime));
         }
         throw new SherlockException("That command is not in my casebook. Try another clue.");
     }
