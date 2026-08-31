@@ -75,39 +75,39 @@ public class Sherlock {
      */
     private boolean execute(Command command) throws IOException {
         switch (command.getType()) {
-        case BYE:
-            ui.showGoodbye();
-            return true;
-        case LIST:
-            ui.showTaskList(tasks);
-            return false;
-        case FIND:
-            ui.showMatchingTasks(tasks.find(command.getKeyword()));
-            return false;
-        case MARK:
-            Task completedTask = tasks.get(command.getTaskNumber() - 1);
-            completedTask.markAsDone();
-            storage.save(tasks);
-            ui.showMarkedAsDone(completedTask);
-            return false;
-        case UNMARK:
-            Task incompleteTask = tasks.get(command.getTaskNumber() - 1);
-            incompleteTask.markAsNotDone();
-            storage.save(tasks);
-            ui.showMarkedAsNotDone(incompleteTask);
-            return false;
-        case DELETE:
-            Task deletedTask = tasks.delete(command.getTaskNumber() - 1);
-            storage.save(tasks);
-            ui.showDeletedTask(deletedTask, tasks.size());
-            return false;
-        case ADD:
-            tasks.add(command.getTask());
-            storage.save(tasks);
-            ui.showAddedTask(command.getTask());
-            return false;
-        default:
-            throw new AssertionError("Unhandled command type: " + command.getType());
+            case BYE:
+                ui.showGoodbye();
+                return true;
+            case LIST:
+                ui.showTaskList(tasks);
+                return false;
+            case FIND:
+                ui.showMatchingTasks(tasks.find(command.getKeyword()));
+                return false;
+            case MARK:
+                Task completedTask = tasks.get(command.getTaskNumber() - 1);
+                completedTask.markAsDone();
+                storage.save(tasks);
+                ui.showMarkedAsDone(completedTask);
+                return false;
+            case UNMARK:
+                Task incompleteTask = tasks.get(command.getTaskNumber() - 1);
+                incompleteTask.markAsNotDone();
+                storage.save(tasks);
+                ui.showMarkedAsNotDone(incompleteTask);
+                return false;
+            case DELETE:
+                Task deletedTask = tasks.delete(command.getTaskNumber() - 1);
+                storage.save(tasks);
+                ui.showDeletedTask(deletedTask, tasks.size());
+                return false;
+            case ADD:
+                tasks.add(command.getTask());
+                storage.save(tasks);
+                ui.showAddedTask(command.getTask());
+                return false;
+            default:
+                throw new AssertionError("Unhandled command type: " + command.getType());
         }
     }
 
