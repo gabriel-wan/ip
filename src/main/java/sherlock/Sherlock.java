@@ -3,6 +3,7 @@ package sherlock;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 import java.util.Scanner;
 
 import sherlock.command.Command;
@@ -20,19 +21,26 @@ public class Sherlock {
     private static final Path SAVE_FILE = Path.of("data", "sherlock.txt");
     private final Storage storage;
     private TaskList tasks;
-    private final Ui ui;
     private final Parser parser;
+    /** Loading failure retained so both user interfaces can report it after construction. */
+    private String loadingError;
 
     /**
-     * Creates the application and restores saved tasks where possible.
+     * Creates Sherlock using the default task data file.
+     */
+    public Sherlock() {
+        this(SAVE_FILE);
+    }
+
+    /**
+     * Creates Sherlock using a specified task data file.
      *
      * @param filePath location of the task data file
-     * @param ui user interface used for all interaction
      */
-    Sherlock(Path filePath, Ui ui) {
+    Sherlock(Path filePath) {
         this.storage = new Storage(filePath);
-        this.ui = ui;
         this.parser = new Parser();
+        this.tasks = loadTasks();
     }
 
     /**
@@ -42,73 +50,143 @@ public class Sherlock {
      */
     public static void main(String[] args) {
         try (Ui ui = new Ui(new Scanner(System.in))) {
-            new Sherlock(SAVE_FILE, ui).run();
+            new Sherlock().run(ui);
         }
     }
 
     /**
      * Runs Sherlock's command loop until the user exits.
+     *
+     * @param ui console user interface
      */
-    void run() {
+    void run(Ui ui) {
         ui.showWelcome();
-        tasks = loadTasks();
+        if (loadingError != null) {
+            ui.showLoadingError(loadingError);
+        }
         while (true) {
-            try {
-                Command command = parser.parse(ui.readCommand(), tasks.size());
-                if (execute(command)) {
-                    return;
-                }
-            } catch (DateTimeParseException exception) {
-                ui.showError("Enter deadline dates in yyyy-MM-dd format, for example 2019-10-15.");
-            } catch (SherlockException | IOException exception) {
-                ui.showError(exception.getMessage());
+            String input = ui.readCommand();
+            ui.showResponse(getResponse(input));
+            if (input.equals("bye")) {
+                return;
             }
         }
+    }
+
+    /**
+     * Processes one command and returns the text to display in either user interface.
+     *
+     * @param input full command entered by the user
+     * @return Sherlock's response to the command
+     */
+    public String getResponse(String input) {
+        try {
+            return execute(parser.parse(input, tasks.size()));
+        } catch (DateTimeParseException exception) {
+            return errorMessage("Enter deadline dates in yyyy-MM-dd format, for example 2019-10-15.");
+        } catch (SherlockException | IOException exception) {
+            return errorMessage(exception.getMessage());
+        }
+    }
+
+    /**
+     * Returns the greeting displayed when the graphical interface opens.
+     *
+     * @return greeting, including a storage warning when saved tasks could not be loaded
+     */
+    public String getWelcomeMessage() {
+        String greeting = "Hello! I'm Sherlock, your detective assistant.\nWhat can I do for you?";
+        if (loadingError == null) {
+            return greeting;
+        }
+        return greeting + "\n\n" + errorMessage("I could not load saved tasks: " + loadingError);
     }
 
     /**
      * Applies a parsed command to Sherlock's task list.
      *
      * @param command command to execute
-     * @return whether Sherlock should exit
+     * @return response describing the result
      * @throws IOException if an updated task list cannot be saved
      */
-    private boolean execute(Command command) throws IOException {
+    private String execute(Command command) throws IOException {
         switch (command.getType()) {
             case BYE:
-                ui.showGoodbye();
-                return true;
+                return "Bye. Hope to see you again soon!";
             case LIST:
-                ui.showTaskList(tasks);
-                return false;
+                return formatTaskList("Here are the tasks in your list:", tasks);
             case FIND:
-                ui.showMatchingTasks(tasks.find(command.getKeyword()));
-                return false;
+                return formatMatchingTasks(tasks.find(command.getKeyword()));
             case MARK:
                 Task completedTask = tasks.get(command.getTaskNumber() - 1);
                 completedTask.markAsDone();
                 storage.save(tasks);
-                ui.showMarkedAsDone(completedTask);
-                return false;
+                return "Nice! I've marked this task as done:\n  " + completedTask;
             case UNMARK:
                 Task incompleteTask = tasks.get(command.getTaskNumber() - 1);
                 incompleteTask.markAsNotDone();
                 storage.save(tasks);
-                ui.showMarkedAsNotDone(incompleteTask);
-                return false;
+                return "OK, I've marked this task as not done yet:\n  " + incompleteTask;
             case DELETE:
                 Task deletedTask = tasks.delete(command.getTaskNumber() - 1);
                 storage.save(tasks);
-                ui.showDeletedTask(deletedTask, tasks.size());
-                return false;
+                return "Noted. I've removed this task:\n  " + deletedTask
+                        + "\nNow you have " + tasks.size() + " tasks in the list.";
             case ADD:
                 tasks.add(command.getTask());
                 storage.save(tasks);
-                ui.showAddedTask(command.getTask());
-                return false;
+                return "added: " + command.getTask();
             default:
                 throw new AssertionError("Unhandled command type: " + command.getType());
         }
+    }
+
+    /**
+     * Formats search results with one-based numbering for display.
+     *
+     * @param matchingTasks tasks whose descriptions matched the search keyword
+     * @return formatted search result message
+     */
+    private String formatMatchingTasks(List<Task> matchingTasks) {
+        if (matchingTasks.isEmpty()) {
+            return "I could not find any matching tasks.";
+        }
+        StringBuilder response = new StringBuilder("Here are the matching tasks in your list:");
+        for (int index = 0; index < matchingTasks.size(); index++) {
+            response.append(System.lineSeparator())
+                    .append(index + 1)
+                    .append(". ")
+                    .append(matchingTasks.get(index));
+        }
+        return response.toString();
+    }
+
+    /**
+     * Formats all tasks with one-based numbering for display.
+     *
+     * @param heading text placed before the numbered tasks
+     * @param taskList tasks to include
+     * @return formatted task-list message
+     */
+    private String formatTaskList(String heading, TaskList taskList) {
+        StringBuilder response = new StringBuilder(heading);
+        for (int index = 0; index < taskList.size(); index++) {
+            response.append(System.lineSeparator())
+                    .append(index + 1)
+                    .append(". ")
+                    .append(taskList.get(index));
+        }
+        return response.toString();
+    }
+
+    /**
+     * Adds the common visual prefix to a user-facing error.
+     *
+     * @param message explanation of the error
+     * @return consistently formatted error message
+     */
+    private String errorMessage(String message) {
+        return "☹ OOPS!!! " + message;
     }
 
     /**
@@ -120,7 +198,7 @@ public class Sherlock {
         try {
             return storage.load();
         } catch (IOException | SherlockException | DateTimeParseException exception) {
-            ui.showLoadingError(exception.getMessage());
+            loadingError = exception.getMessage();
             return new TaskList(100);
         }
     }
