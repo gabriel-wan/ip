@@ -38,16 +38,16 @@ class ParserTest {
 
     @Test
     void parseTodoWithoutDescription_throwsHelpfulException() {
-        SherlockException exception = assertThrows(SherlockException.class,
-                () -> parser.parse("todo", 0));
+        SherlockException exception = assertThrows(
+                SherlockException.class, () -> parser.parse("todo", 0));
 
         assertEquals("I need a case description before I can add it.", exception.getMessage());
     }
 
     @Test
     void parseFindWithoutKeyword_throwsHelpfulException() {
-        SherlockException exception = assertThrows(SherlockException.class,
-                () -> parser.parse("find", 0));
+        SherlockException exception = assertThrows(
+                SherlockException.class, () -> parser.parse("find", 0));
 
         assertEquals("I need a keyword to search the casebook.", exception.getMessage());
     }
