@@ -36,6 +36,8 @@ public class Command {
      * @return command for the action
      */
     public static Command of(Type type) {
+        assert type == Type.BYE || type == Type.LIST
+                : "Only commands without arguments can be created without a payload";
         return new Command(type, 0, null, null);
     }
 
@@ -47,6 +49,9 @@ public class Command {
      * @return command for the action and task number
      */
     public static Command withTaskNumber(Type type, int taskNumber) {
+        assert type == Type.MARK || type == Type.UNMARK || type == Type.DELETE
+                : "A task number can only be attached to an indexed task command";
+        assert taskNumber > 0 : "Task numbers must be one-based";
         return new Command(type, taskNumber, null, null);
     }
 
@@ -57,6 +62,7 @@ public class Command {
      * @return add command for the task
      */
     public static Command withTask(Task task) {
+        assert task != null : "An add command must contain a task";
         return new Command(Type.ADD, 0, task, null);
     }
 
@@ -67,6 +73,7 @@ public class Command {
      * @return find command for the keyword
      */
     public static Command withKeyword(String keyword) {
+        assert keyword != null && !keyword.isBlank() : "A find command must contain a keyword";
         return new Command(Type.FIND, 0, null, keyword);
     }
 
