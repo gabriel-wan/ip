@@ -9,6 +9,7 @@ public class Command {
     /** Identifies the action represented by a command. */
     public enum Type {
         BYE,
+        HELP,
         LIST,
         FIND,
         MARK,
@@ -36,7 +37,7 @@ public class Command {
      * @return command for the action
      */
     public static Command of(Type type) {
-        assert type == Type.BYE || type == Type.LIST
+        assert type == Type.BYE || type == Type.HELP || type == Type.LIST
                 : "Only commands without arguments can be created without a payload";
         return new Command(type, 0, null, null);
     }

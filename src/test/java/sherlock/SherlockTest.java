@@ -27,4 +27,15 @@ class SherlockTest {
 
         assertEquals("Bye. Hope to see you again soon!", sherlock.getResponse("bye"));
     }
+
+    @Test
+    void getResponse_help_returnsCommandGuide() {
+        Sherlock sherlock = new Sherlock(temporaryFolder.resolve("tasks.txt"));
+
+        String response = sherlock.getResponse("help");
+
+        assertTrue(response.contains("todo DESCRIPTION"));
+        assertTrue(response.contains("deadline DESCRIPTION /by yyyy-MM-dd"));
+        assertTrue(response.contains("help - show this command guide"));
+    }
 }

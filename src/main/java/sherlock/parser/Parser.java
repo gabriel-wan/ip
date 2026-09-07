@@ -21,6 +21,8 @@ public class Parser {
     public Command parse(String input, int taskCount) throws SherlockException {
         if (input.equals("bye")) {
             return Command.of(Command.Type.BYE);
+        } else if (input.equals("help")) {
+            return Command.of(Command.Type.HELP);
         } else if (input.equals("list")) {
             return Command.of(Command.Type.LIST);
         } else if (isCommand(input, "find")) {

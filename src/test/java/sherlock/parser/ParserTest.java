@@ -37,6 +37,13 @@ class ParserTest {
     }
 
     @Test
+    void parseHelp_createsHelpCommand() throws SherlockException {
+        Command command = parser.parse("help", 0);
+
+        assertEquals(Command.Type.HELP, command.getType());
+    }
+
+    @Test
     void parseTodoWithoutDescription_throwsHelpfulException() {
         SherlockException exception = assertThrows(
                 SherlockException.class, () -> parser.parse("todo", 0));

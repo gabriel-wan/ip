@@ -19,6 +19,18 @@ import sherlock.ui.Ui;
  */
 public class Sherlock {
     private static final Path SAVE_FILE = Path.of("data", "sherlock.txt");
+    private static final String HELP_MESSAGE = String.join(System.lineSeparator(),
+            "Here are the commands in my casebook:",
+            "  list - show every task",
+            "  todo DESCRIPTION - add a todo",
+            "  deadline DESCRIPTION /by yyyy-MM-dd - add a deadline",
+            "  event DESCRIPTION /from START /to END - add an event",
+            "  mark NUMBER - mark a task as done",
+            "  unmark NUMBER - mark a task as not done",
+            "  delete NUMBER - remove a task",
+            "  find KEYWORD - find matching tasks",
+            "  help - show this command guide",
+            "  bye - close Sherlock");
     private final Storage storage;
     private TaskList tasks;
     private final Parser parser;
@@ -113,6 +125,8 @@ public class Sherlock {
         switch (command.getType()) {
             case BYE:
                 return "Bye. Hope to see you again soon!";
+            case HELP:
+                return HELP_MESSAGE;
             case LIST:
                 return formatTaskList("Here are the tasks in your list:", tasks);
             case FIND:
