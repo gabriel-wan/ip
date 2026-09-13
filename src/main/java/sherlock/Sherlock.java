@@ -19,6 +19,7 @@ import sherlock.ui.Ui;
  */
 public class Sherlock {
     private static final Path SAVE_FILE = Path.of("data", "sherlock.txt");
+    private static final String ERROR_PREFIX = "⚠ The trail has gone cold: ";
     private static final String HELP_MESSAGE = String.join(System.lineSeparator(),
             "Here are the commands in my casebook:",
             "  list - show every task",
@@ -107,11 +108,21 @@ public class Sherlock {
      * @return greeting, including a storage warning when saved tasks could not be loaded
      */
     public String getWelcomeMessage() {
-        String greeting = "Hello! I'm Sherlock, your detective assistant.\nWhat can I do for you?";
+        String greeting = "Sherlock at your service.\nWhat mystery shall we solve today?";
         if (loadingError == null) {
             return greeting;
         }
         return greeting + "\n\n" + errorMessage("I could not load saved tasks: " + loadingError);
+    }
+
+    /**
+     * Returns whether a response represents an error that should be highlighted by the GUI.
+     *
+     * @param response response returned by {@link #getResponse(String)}
+     * @return whether the response begins with Sherlock's error phrase
+     */
+    public boolean isErrorResponse(String response) {
+        return response.startsWith(ERROR_PREFIX);
     }
 
     /**
@@ -124,32 +135,32 @@ public class Sherlock {
     private String execute(Command command) throws IOException {
         switch (command.getType()) {
             case BYE:
-                return "Bye. Hope to see you again soon!";
+                return "The casebook is closed. Until our next investigation!";
             case HELP:
                 return HELP_MESSAGE;
             case LIST:
-                return formatTaskList("Here are the tasks in your list:", tasks);
+                return formatTaskList("Here are the cases in your casebook:", tasks);
             case FIND:
                 return formatMatchingTasks(tasks.find(command.getKeyword()));
             case MARK:
                 Task completedTask = tasks.get(command.getTaskNumber() - 1);
                 completedTask.markAsDone();
                 storage.save(tasks);
-                return "Nice! I've marked this task as done:\n  " + completedTask;
+                return "Elementary! This case is solved:\n  " + completedTask;
             case UNMARK:
                 Task incompleteTask = tasks.get(command.getTaskNumber() - 1);
                 incompleteTask.markAsNotDone();
                 storage.save(tasks);
-                return "OK, I've marked this task as not done yet:\n  " + incompleteTask;
+                return "The investigation continues for this case:\n  " + incompleteTask;
             case DELETE:
                 Task deletedTask = tasks.delete(command.getTaskNumber() - 1);
                 storage.save(tasks);
-                return "Noted. I've removed this task:\n  " + deletedTask
-                        + "\nNow you have " + tasks.size() + " tasks in the list.";
+                return "That case has been removed from the casebook:\n  " + deletedTask
+                        + "\n" + tasks.size() + " cases remain.";
             case ADD:
                 tasks.add(command.getTask());
                 storage.save(tasks);
-                return "added: " + command.getTask();
+                return "A new case has been entered into the casebook:\n  " + command.getTask();
             default:
                 throw new AssertionError("Unhandled command type: " + command.getType());
         }
@@ -163,9 +174,9 @@ public class Sherlock {
      */
     private String formatMatchingTasks(List<Task> matchingTasks) {
         if (matchingTasks.isEmpty()) {
-            return "I could not find any matching tasks.";
+            return "No matching clues were found in the casebook.";
         }
-        StringBuilder response = new StringBuilder("Here are the matching tasks in your list:");
+        StringBuilder response = new StringBuilder("These cases match your clue:");
         for (int index = 0; index < matchingTasks.size(); index++) {
             response.append(System.lineSeparator())
                     .append(index + 1)
@@ -200,7 +211,7 @@ public class Sherlock {
      * @return consistently formatted error message
      */
     private String errorMessage(String message) {
-        return "☹ OOPS!!! " + message;
+        return ERROR_PREFIX + message;
     }
 
     /**

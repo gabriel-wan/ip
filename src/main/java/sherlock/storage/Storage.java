@@ -58,6 +58,10 @@ public class Storage {
      * @throws IOException if the file cannot be written
      */
     public void save(TaskList tasks) throws IOException {
+        Path parent = filePath.getParent();
+        if (parent != null) {
+            Files.createDirectories(parent);
+        }
         List<String> lines = new ArrayList<>();
         for (int index = 0; index < tasks.size(); index++) {
             lines.add(tasks.get(index).toFileString());

@@ -52,7 +52,9 @@ public class DialogBox extends HBox {
      * @return user dialog box
      */
     public static DialogBox getUserDialog(String text, Image image) {
-        return new DialogBox(text, image);
+        DialogBox dialogBox = new DialogBox(text, image);
+        dialogBox.getStyleClass().add("user-dialog-box");
+        return dialogBox;
     }
 
     /**
@@ -63,8 +65,21 @@ public class DialogBox extends HBox {
      * @return Sherlock dialog box
      */
     public static DialogBox getSherlockDialog(String text, Image image) {
+        return getSherlockDialog(text, image, false);
+    }
+
+    /**
+     * Creates a left-aligned Sherlock dialog, highlighting it when it reports an error.
+     *
+     * @param text Sherlock's response
+     * @param image Sherlock avatar
+     * @param isError whether the response describes an invalid command or failed operation
+     * @return Sherlock dialog box with the appropriate visual style
+     */
+    public static DialogBox getSherlockDialog(String text, Image image, boolean isError) {
         DialogBox dialogBox = new DialogBox(text, image);
         dialogBox.flip();
+        dialogBox.getStyleClass().add(isError ? "error-dialog-box" : "sherlock-dialog-box");
         return dialogBox;
     }
 }

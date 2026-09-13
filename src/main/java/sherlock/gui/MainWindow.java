@@ -55,9 +55,10 @@ public class MainWindow extends AnchorPane {
         if (input.isEmpty()) {
             return;
         }
+        String response = sherlock.getResponse(input);
         dialogContainer.getChildren().addAll(
                 DialogBox.getUserDialog(input, userImage),
-                DialogBox.getSherlockDialog(sherlock.getResponse(input), sherlockImage));
+                DialogBox.getSherlockDialog(response, sherlockImage, sherlock.isErrorResponse(response)));
         userInput.clear();
         if (input.equals("bye")) {
             userInput.setDisable(true);

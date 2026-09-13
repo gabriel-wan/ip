@@ -27,7 +27,7 @@ public class Main extends Application {
         AnchorPane root = loader.load();
         loader.<MainWindow>getController().setSherlock(sherlock);
 
-        stage.setTitle("Sherlock");
+        stage.setTitle("Sherlock — Detective Casebook");
         stage.setMinHeight(600);
         stage.setMinWidth(420);
         stage.setScene(new Scene(root));

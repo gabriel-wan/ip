@@ -19,6 +19,7 @@ public class Parser {
      * @throws SherlockException if the command is incomplete or invalid
      */
     public Command parse(String input, int taskCount) throws SherlockException {
+        input = input.trim();
         if (input.equals("bye")) {
             return Command.of(Command.Type.BYE);
         } else if (input.equals("help")) {
@@ -63,9 +64,9 @@ public class Parser {
 
     /** Parses a command that creates a deadline. */
     private Command parseDeadline(String input) throws SherlockException {
-        String[] details = input.substring(8).trim().split(" /by ", 2);
+        String[] details = input.substring(8).trim().split("\\s+/by\\s+", -1);
         if (details.length != 2) {
-            throw new SherlockException("A deadline must include /by followed by a time.");
+            throw new SherlockException("A deadline must include exactly one /by followed by a date.");
         }
         String description = requireText(details[0], "The description of a deadline cannot be empty.");
         String deadlineDate = requireText(details[1], "The time of a deadline cannot be empty.");
@@ -74,13 +75,17 @@ public class Parser {
 
     /** Parses a command that creates an event. */
     private Command parseEvent(String input) throws SherlockException {
-        String[] details = input.substring(5).trim().split(" /from | /to ", 3);
-        if (details.length != 3) {
-            throw new SherlockException("An event must include /from and /to times.");
+        String[] fromDetails = input.substring(5).trim().split("\\s+/from\\s+", -1);
+        if (fromDetails.length != 2) {
+            throw new SherlockException("An event must include exactly one /from followed by a start time.");
         }
-        String description = requireText(details[0], "The description of an event cannot be empty.");
-        String startTime = requireText(details[1], "The start time of an event cannot be empty.");
-        String endTime = requireText(details[2], "The end time of an event cannot be empty.");
+        String[] timeDetails = fromDetails[1].split("\\s+/to\\s+", -1);
+        if (timeDetails.length != 2) {
+            throw new SherlockException("An event must include exactly one /to followed by an end time.");
+        }
+        String description = requireText(fromDetails[0], "The description of an event cannot be empty.");
+        String startTime = requireText(timeDetails[0], "The start time of an event cannot be empty.");
+        String endTime = requireText(timeDetails[1], "The end time of an event cannot be empty.");
         return Command.withTask(new Event(description, startTime, endTime));
     }
 
