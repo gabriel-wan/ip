@@ -33,7 +33,7 @@ class ParserTest {
         Command command = parser.parse("deadline return book   /by   2026-09-18", 0);
 
         assertEquals(Command.Type.ADD, command.getType());
-        assertEquals("[D][ ] return book (by: Sept 18 2026)", command.getTask().toString());
+        assertEquals("[D][ ] return book (by: Sep 18 2026)", command.getTask().toString());
     }
 
     @Test

@@ -35,7 +35,7 @@ class StorageTest {
 
         assertEquals(2, loadedTasks.size());
         assertEquals("[T][X] inspect footprint", loadedTasks.get(0).toString());
-        assertEquals("[D][ ] file report (by: Sept 18 2026)", loadedTasks.get(1).toString());
+        assertEquals("[D][ ] file report (by: Sep 18 2026)", loadedTasks.get(1).toString());
     }
 
     @Test
